@@ -21,6 +21,7 @@ StaticCash is a sample Android project using <a href="https://naufalnibros.githu
 
 
 ## JSON API Schemas
+Or can you visit this <a href="https://naufalnibros.github.io/static-cash.json">StaticCash.json</a>
 ```
 {
   "2017-02": [
