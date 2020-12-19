@@ -9,14 +9,22 @@ import io.reactivex.Flowable
 
 interface StaticCashDataSource {
 
-    fun save(item: Item): Completable
+    interface Operation {
 
-    fun list(): LiveData<Resource<List<Item>>>
+        fun save(item: Item): Completable
 
-    fun find(item: Item): Flowable<StaticCash>
+        fun find(item: Item): Flowable<StaticCash>
 
-    fun delete(item: Item): Completable
+        fun delete(item: Item): Completable
 
-    fun deleteAll(): Completable
+    }
+
+    interface Store {
+
+        fun list(): LiveData<Resource<List<Item>>>
+
+        fun deleteAll(): Completable
+
+    }
 
 }

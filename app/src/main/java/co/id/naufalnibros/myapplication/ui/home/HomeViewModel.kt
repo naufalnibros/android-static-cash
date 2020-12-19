@@ -1,4 +1,4 @@
-package co.id.naufalnibros.myapplication.ui.main
+package co.id.naufalnibros.myapplication.ui.home
 
 import androidx.lifecycle.*
 import co.id.naufalnibros.myapplication.data.Resource
@@ -8,19 +8,19 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 
-class MainViewModel(val repository: MainRepository) : ViewModel() {
+class HomeViewModel(private val repository: HomeRepository) : ViewModel() {
 
     private val disposable by lazy {
         CompositeDisposable()
     }
 
-    private val stateSave = MutableLiveData<MainState>()
+    private val stateSave = MutableLiveData<HomeState>()
 
-    private val stateDelete = MutableLiveData<MainState>()
+    private val stateDelete = MutableLiveData<HomeState>()
 
-    private val stateRefresh = MutableLiveData<MainState>()
+    private val stateRefresh = MutableLiveData<HomeState>()
 
-    private val stateisSave = MutableLiveData<MainState>()
+    private val stateisSave = MutableLiveData<HomeState>()
 
     val liveDataSave get() = stateSave
 
@@ -33,7 +33,7 @@ class MainViewModel(val repository: MainRepository) : ViewModel() {
     init {
         liveDataList = Transformations.switchMap(stateRefresh) {
             when (it) {
-                is MainState.OnSuccess -> repository.list()
+                is HomeState.OnSuccess -> repository.list()
                 else -> MutableLiveData(
                     Resource(
                         status = Status.ERROR,
@@ -43,21 +43,21 @@ class MainViewModel(val repository: MainRepository) : ViewModel() {
             }
         }
 
-        stateRefresh.postValue(MainState.OnSuccess())
+        stateRefresh.postValue(HomeState.OnSuccess())
     }
 
-    fun refresh() = stateRefresh.postValue(MainState.OnSuccess())
+    fun refresh() = stateRefresh.postValue(HomeState.OnSuccess())
 
     fun save(item: Item, position: Int) =
         disposable.add(
             repository.save(item)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { stateSave.postValue(MainState.OnLoading) }
+                .doOnSubscribe { stateSave.postValue(HomeState.OnLoading) }
                 .subscribe({
-                    stateSave.postValue(MainState.OnSuccess(position = position))
+                    stateSave.postValue(HomeState.OnSuccess(position = position))
                 }, {
-                    stateSave.postValue(it.message?.let { error -> MainState.OnError(error) })
+                    stateSave.postValue(it.message?.let { error -> HomeState.OnError(error) })
                 })
         )
 
@@ -66,12 +66,12 @@ class MainViewModel(val repository: MainRepository) : ViewModel() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe {
-                stateDelete.postValue(MainState.OnLoading)
+                stateDelete.postValue(HomeState.OnLoading)
             }
             .subscribe({
-                stateDelete.postValue(MainState.OnSuccess(position = position))
+                stateDelete.postValue(HomeState.OnSuccess(position = position))
             }, {
-                stateDelete.postValue(it.message?.let { error -> MainState.OnError(error) })
+                stateDelete.postValue(it.message?.let { error -> HomeState.OnError(error) })
             })
     )
 
@@ -80,12 +80,12 @@ class MainViewModel(val repository: MainRepository) : ViewModel() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe {
-                stateisSave.value = MainState.OnLoading
+                stateisSave.value = HomeState.OnLoading
             }
             .subscribe({
-                stateisSave.value = MainState.OnSuccess(position = position)
+                stateisSave.value = HomeState.OnSuccess(position = position)
             }, {
-                stateisSave.value = (it.message?.let { error -> MainState.OnError(error) })
+                stateisSave.value = (it.message?.let { error -> HomeState.OnError(error) })
             })
     )
 
@@ -94,12 +94,12 @@ class MainViewModel(val repository: MainRepository) : ViewModel() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe {
-                stateRefresh.postValue(MainState.OnLoading)
+                stateRefresh.postValue(HomeState.OnLoading)
             }
             .subscribe({
-                stateRefresh.postValue(MainState.OnSuccess())
+                stateRefresh.postValue(HomeState.OnSuccess())
             }, {
-                stateisSave.value = (it.message?.let { error -> MainState.OnError(error) })
+                stateisSave.value = (it.message?.let { error -> HomeState.OnError(error) })
             })
     )
 
@@ -108,23 +108,22 @@ class MainViewModel(val repository: MainRepository) : ViewModel() {
         disposable.clear()
     }
 
-    sealed class MainState {
-        object OnLoading : MainState()
-        data class OnSuccess(val message: String? = null, val position: Int? = null) : MainState()
-        data class OnError(val message: String) : MainState()
+    sealed class HomeState {
+        object OnLoading : HomeState()
+        data class OnSuccess(val message: String? = null, val position: Int? = null) : HomeState()
+        data class OnError(val message: String) : HomeState()
     }
 
     companion object {
         @Suppress("UNCHECKED_CAST")
         fun provideFactory(
-            repository: MainRepository
+            repository: HomeRepository
         ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                    return MainViewModel(repository) as T
+                    return HomeViewModel(repository) as T
                 }
             }
         }
     }
-
 }

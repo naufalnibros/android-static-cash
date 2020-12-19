@@ -3,9 +3,11 @@ package co.id.naufalnibros.myapplication.adapter
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import co.id.naufalnibros.myapplication.data.response.Item
 import co.id.naufalnibros.myapplication.databinding.RecyclerviewItemBinding
+import co.id.naufalnibros.myapplication.ui.home.HomeFragmentDirections
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -43,6 +45,14 @@ class StaticCashAdapter(
                 onDeleteListener.deleteItem(list[position], position)
             else
                 onSaveListener.saveItem(list[position], position)
+        }
+
+        holder.itemView.setOnClickListener {
+            it.findNavController().navigate(
+                HomeFragmentDirections.actionHomeFragmentToDetailFragment(
+                    list[position]
+                )
+            )
         }
     }
 

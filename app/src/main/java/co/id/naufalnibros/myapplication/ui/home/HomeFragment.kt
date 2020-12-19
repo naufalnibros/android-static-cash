@@ -1,35 +1,45 @@
-package co.id.naufalnibros.myapplication.ui.main
+package co.id.naufalnibros.myapplication.ui.home
 
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import co.id.naufalnibros.myapplication.R
 import co.id.naufalnibros.myapplication.adapter.StaticCashAdapter
 import co.id.naufalnibros.myapplication.data.Status
 import co.id.naufalnibros.myapplication.data.response.Item
-import co.id.naufalnibros.myapplication.databinding.ActivityMainBinding
+import co.id.naufalnibros.myapplication.databinding.FragmentHomeBinding
 import co.id.naufalnibros.myapplication.injection.InjectionRepository
 import co.id.naufalnibros.myapplication.utils.viewBinding
 
-class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
+class HomeFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener,
     StaticCashAdapter.OnSaveListener, StaticCashAdapter.OnDeleteListener {
 
-    private val binding by viewBinding(ActivityMainBinding::inflate)
-
-    private val viewModel: MainViewModel by viewModels {
-        MainViewModel.provideFactory(
-            InjectionRepository
-                .provideStaticCash(contex = applicationContext)
-        )
-    }
+    private val binding by viewBinding(FragmentHomeBinding::bind)
 
     private var adapter = StaticCashAdapter(this, this)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
+    private val viewModel: HomeViewModel by viewModels {
+        HomeViewModel.provideFactory(
+            InjectionRepository
+                .provideStaticCash(requireContext())
+        )
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_home, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         binding.recyclerview.adapter = adapter
         binding.swipeRefresh.setOnRefreshListener(this)
 
@@ -40,7 +50,11 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
             true
         }
 
-        viewModel.liveDataList.observe(this, {
+        subscribeUi()
+    }
+
+    private fun subscribeUi() {
+        viewModel.liveDataList.observe(viewLifecycleOwner, {
             it?.let {
                 when (it.status) {
                     Status.SUCCESS -> {
@@ -59,7 +73,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
                         binding.swipeRefresh.isRefreshing = false
                         Log.d(
                             javaClass.simpleName,
-                            "onCreate: viewModel.liveDataList.observe ${it.message}"
+                            "subscribeUi: viewModel.liveDataList.observe ${it.message}"
                         )
                     }
                     Status.LOADING -> {
@@ -69,67 +83,71 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
             }
         })
 
-        viewModel.liveDataSave.observe(this, { it ->
+        viewModel.liveDataSave.observe(viewLifecycleOwner, { it ->
             when (it) {
-                MainViewModel.MainState.OnLoading -> {
+                HomeViewModel.HomeState.OnLoading -> {
                 }
-                is MainViewModel.MainState.OnSuccess -> {
+                is HomeViewModel.HomeState.OnSuccess -> {
                     it.position?.let {
                         adapter.list[it].status = true
                         adapter.notifyItemChanged(it)
                     }
                 }
-                is MainViewModel.MainState.OnError -> {
+                is HomeViewModel.HomeState.OnError -> {
                     Log.d(
                         javaClass.simpleName,
-                        "onCreate: viewModel.liveDataSave.observe ${it.message}"
+                        "subscribeUi: viewModel.liveDataSave.observe ${it.message}"
                     )
                 }
             }
         })
 
-        viewModel.liveDataDelete.observe(this, { it ->
+        viewModel.liveDataDelete.observe(viewLifecycleOwner, { it ->
             when (it) {
-                MainViewModel.MainState.OnLoading -> {
+                HomeViewModel.HomeState.OnLoading -> {
                 }
-                is MainViewModel.MainState.OnSuccess -> {
+                is HomeViewModel.HomeState.OnSuccess -> {
                     it.position?.let {
                         adapter.list[it].status = false
                         adapter.notifyItemChanged(it)
                     }
                 }
-                is MainViewModel.MainState.OnError -> {
+                is HomeViewModel.HomeState.OnError -> {
                     Log.d(
                         javaClass.simpleName,
-                        "onCreate: viewModel.liveDataDelete.observe ${it.message}"
+                        "subscribeUi: viewModel.liveDataDelete.observe ${it.message}"
                     )
                 }
             }
         })
 
-        viewModel.liveDataisSave.observe(this, { it ->
+        viewModel.liveDataisSave.observe(viewLifecycleOwner, { it ->
             when (it) {
-                MainViewModel.MainState.OnLoading -> {
+                HomeViewModel.HomeState.OnLoading -> {
                 }
-                is MainViewModel.MainState.OnSuccess -> {
+                is HomeViewModel.HomeState.OnSuccess -> {
                     Log.d(
                         javaClass.simpleName,
-                        "find: onCreate: viewModel.liveDataisSave.observe ${it.position}"
+                        "find: subscribeUi: viewModel.liveDataisSave.observe ${it.position}"
                     )
                     it.position?.let {
                         adapter.list[it].status = true
                         adapter.notifyItemChanged(it)
                     }
                 }
-                is MainViewModel.MainState.OnError -> {
+                is HomeViewModel.HomeState.OnError -> {
                     Log.d(
                         javaClass.simpleName,
-                        "onCreate: viewModel.liveDataisSave.observe ${it.message}"
+                        "find: subscribeUi: viewModel.liveDataisSave.observe ${it.message}"
                     )
                 }
             }
         })
+    }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.refresh()
     }
 
     override fun onRefresh() {

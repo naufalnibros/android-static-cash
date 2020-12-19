@@ -1,4 +1,4 @@
-package co.id.naufalnibros.myapplication.ui.main
+package co.id.naufalnibros.myapplication.ui.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
@@ -15,18 +15,18 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 
-class MainRepository(
+class HomeRepository(
     private val service: StaticCashService,
     private val dao: StaticCashDao
-) : StaticCashDataSource {
+) : StaticCashDataSource.Operation, StaticCashDataSource.Store {
 
     companion object {
         @Volatile
-        private var instance: MainRepository? = null
+        private var instance: HomeRepository? = null
 
-        fun getInstance(service: StaticCashService, dao: StaticCashDao): MainRepository =
+        fun getInstance(service: StaticCashService, dao: StaticCashDao): HomeRepository =
             instance ?: synchronized(this) {
-                instance ?: MainRepository(service, dao)
+                instance ?: HomeRepository(service, dao)
             }
     }
 
