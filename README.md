@@ -1,5 +1,7 @@
 <h1>Static Cash</h1>
 
+<img src="demo.gif" align="right" width="30%"/>
+
 <p>
 StaticCash is a sample Android project using <a href="https://naufalnibros.github.io/static-cash.json">StaticCash.json</a> API based on MVVM architecture. It is my test skill project at that time~
 </p>
